@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.VideoView;
 
+import java.lang.ref.PhantomReference;
 import java.net.URI;
 
 import static java.net.URI.create;
@@ -44,26 +45,20 @@ public static boolean hasaccesstoread = false;
         textview.setText(prevFileUriString);
 
         if(prevFileUriString != "") {
-
-            // ok we need permission to grab the video uri
+            // re-define hasaccesstoread
             requestReadAccess();
-            // do we have a yes from the function? see the overrided function onRequestPermissionsResult
+
             if(hasaccesstoread == true) {
+            // parse string to uri
+            Uri vidUri;
+            vidUri = Uri.parse(prevFileUriString);
+            VideoView mVideoView = (VideoView) findViewById(R.id.mainvideoView);
+            mVideoView.setVideoURI(vidUri);
+            runVideo();
+        }
+    }
 
-                try {
-                    // parse string to uri
-                    Uri vidUri;
-                    vidUri = Uri.parse(prevFileUriString);
-                    VideoView mVideoView = (VideoView) findViewById(R.id.mainvideoView);
-                    mVideoView.setVideoURI(vidUri);
-                    runVideoRecord();
 
-                } catch (IllegalArgumentException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
-            }
 
         video_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -106,6 +101,11 @@ public static boolean hasaccesstoread = false;
                 // result of the request.
             }
         }
+        else
+        {
+            // ok we have permission.. it is cool!
+            hasaccesstoread = true;
+        }
     }
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -119,6 +119,15 @@ public static boolean hasaccesstoread = false;
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
                     hasaccesstoread = true;
+                    SharedPreferences settings = getSharedPreferences(PREV_VIDEO_PREFS, 0);
+                    String prevFileUriString = settings.getString("prev_vid_path", "");
+                    if(prevFileUriString != "") {
+                        Uri vidUri;
+                        vidUri = Uri.parse(prevFileUriString);
+                        VideoView mVideoView = (VideoView) findViewById(R.id.mainvideoView);
+                        mVideoView.setVideoURI(vidUri);
+                        runVideo();
+                    }
 
                 } else {
 
